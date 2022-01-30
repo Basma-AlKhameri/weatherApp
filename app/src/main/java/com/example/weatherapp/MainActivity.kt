@@ -1,9 +1,11 @@
 package com.example.weatherapp
 
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
@@ -21,12 +23,38 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+       val appSettingPrefs: SharedPreferences = getSharedPreferences("AppSettingPrefs", 0)
+        val sharedPrefEdit: SharedPreferences.Editor = appSettingPrefs.edit()
+        val isChecked: Boolean = appSettingPrefs.getBoolean("NightMode", false)
+        val switchStatus:Boolean= appSettingPrefs.getBoolean("switchStatus", false)
+binding.switch1.isChecked =switchStatus
+        if (isChecked) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+
+             binding.switch1.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                sharedPrefEdit.putBoolean("NightMode", true)
+                sharedPrefEdit.putBoolean("switchStatus", true)
+                sharedPrefEdit.apply()
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                sharedPrefEdit.putBoolean("NightMode", false)
+                sharedPrefEdit.putBoolean("switchStatus", false)
+
+                sharedPrefEdit.apply()
+            }
+        }
         binding.searchButton.setOnClickListener {
             getWeather()
             binding.searchInput.text.clear()
-        }
-    }
 
+
+             }
+    }
     private fun getWeather() {
 
         try {
@@ -47,7 +75,7 @@ class MainActivity : AppCompatActivity() {
                     {
                         Toast.makeText(this, "something went wrong!",Toast.LENGTH_LONG ).show()
                         println(it.message)
-                        }
+                    }
                 )
                 queue.add(stringRequest)
             }else{
